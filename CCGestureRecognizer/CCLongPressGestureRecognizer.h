@@ -43,18 +43,29 @@ public:
     ~CCLongPressGestureRecognizer();
     CREATE_FUNC(CCLongPressGestureRecognizer);
     void timerDidEnd(float dt);
-    
+
+    void setTargetForMove(cocos2d::CCObject * tar, cocos2d::SEL_CallFuncO sel) {target_move = tar; selector_move = sel;}
+
+    void resetGestureRecognition() {stopGestureRecognition();isMoving = false;}
+
     virtual bool ccTouchBegan(cocos2d::CCTouch * pTouch, cocos2d::CCEvent * pEvent);
-    virtual void ccTouchMoved(cocos2d::CCTouch * pTouch, cocos2d::CCEvent * pEvent){};
+    virtual void ccTouchMoved(cocos2d::CCTouch * pTouch, cocos2d::CCEvent * pEvent);
     virtual void ccTouchEnded(cocos2d::CCTouch * pTouch, cocos2d::CCEvent * pEvent);
 protected:
     CC_SYNTHESIZE(float, minimumPressDuration, MinimumPressDuration);
+    CC_SYNTHESIZE(float, minimumDistanceForMove, MinimumDistanceForMove);
+
 private:
     cocos2d::CCPoint currLocation;
     cocos2d::CCTouch * currTouch;
     cocos2d::CCEvent * currEvent;
-    
+
+    bool isMoving;
+
     void stopGestureRecognition();
+
+    cocos2d::SEL_CallFuncO selector_move;
+    cocos2d::CCObject * target_move;
 };
 
 #endif
