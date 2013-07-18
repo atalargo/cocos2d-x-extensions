@@ -30,7 +30,8 @@ bool CCLongPressGestureRecognizer::init()
     isMoving = false;
     currTouch = NULL;
     currEvent = NULL;
-    setMinimumDistanceForMove(-1.f);
+    setMinimumDistanceForMove(kLongPressMinDistance);
+//     setMinimumDistanceForMove(-1.f);
 
     setMinimumPressDuration(kLongPressMinDuration);
 
@@ -48,6 +49,7 @@ void CCLongPressGestureRecognizer::timerDidEnd(float dt)
     longPress->location = currLocation;
 
     gestureRecognized(longPress);
+    CCTime::gettimeofdayCocos2d(&startTime, NULL);
 
     isMoving = true;
 
@@ -80,20 +82,27 @@ bool CCLongPressGestureRecognizer::ccTouchBegan(CCTouch * pTouch, CCEvent * pEve
 void CCLongPressGestureRecognizer::ccTouchMoved(cocos2d::CCTouch * pTouch, cocos2d::CCEvent * pEvent)
 {
     if (!isRecognizing && !isMoving) return;
-CCLOG("TOUCH MOVE LONG PRESS");
     if (minimumDistanceForMove > 0)
     {
+
+
         CCLOG("TOUCH MOVE  minDistance");
-        float distant = distanceBetweenPoints(currLocation, pTouch->getLocation());
-        CCLOG("TOUCH MOVE  minDistance x1 %f y1 %f x2 %f y2 %f distance %f minimumDistanceForMove %f sup? %i", currLocation.x, currLocation.y, pTouch->getLocation().x, pTouch->getLocation().y, distant, minimumDistanceForMove, distant>=minimumDistanceForMove);
-        if (distant >= minimumDistanceForMove)
+        float distanceX = currLocation.x - pTouch->getLocation().x;
+        float distanceY = currLocation.y - pTouch->getLocation().y;
+        float distance = distanceBetweenPoints(currLocation, pTouch->getLocation());
+
+        struct cc_timeval currentTime;
+        CCTime::gettimeofdayCocos2d(&currentTime, NULL);
+
+        double duration = CCTime::timersubCocos2d(&startTime, &currentTime);//duration in milliseconds
+        if (distance >= minimumDistanceForMove && duration >= minimumPressDuration)
         {
             currLocation = pTouch->getLocation();
             CCLongPress * longPress = CCLongPress::create();
-            longPress->location = pTouch->getLocation();
+            longPress->location = currLocation;
 
-            if (target_move && selector_move) (target_move->*selector_move)(longPress); //call selector for move;
-
+            gestureMoveRecognized(longPress);
+            startTime = currentTime;
             currTouch = pTouch;
         }
     }

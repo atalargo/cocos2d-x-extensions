@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include "CCGestureRecognizer.h"
 
 #define kLongPressMinDuration 0.5
+#define kLongPressMinDistance 60
 
 //this class is used for storing information about the long press gesture
 class CCLongPress : public cocos2d::CCObject
@@ -55,6 +56,11 @@ protected:
     CC_SYNTHESIZE(float, minimumPressDuration, MinimumPressDuration);
     CC_SYNTHESIZE(float, minimumDistanceForMove, MinimumDistanceForMove);
 
+
+    void gestureMoveRecognized(cocos2d::CCObject * gesture)
+    {
+        if (target_move && selector_move) (target_move->*selector_move)(gesture); //call selector
+    }
 private:
     cocos2d::CCPoint currLocation;
     cocos2d::CCTouch * currTouch;
@@ -66,6 +72,7 @@ private:
 
     cocos2d::SEL_CallFuncO selector_move;
     cocos2d::CCObject * target_move;
+    struct cocos2d::cc_timeval startTime;
 };
 
 #endif
