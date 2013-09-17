@@ -51,16 +51,29 @@ public:
     bool init();
     ~CCSwipeGestureRecognizer();
     CREATE_FUNC(CCSwipeGestureRecognizer);
-    
+
     virtual bool ccTouchBegan(cocos2d::CCTouch * pTouch, cocos2d::CCEvent * pEvent);
     virtual void ccTouchMoved(cocos2d::CCTouch * pTouch, cocos2d::CCEvent * pEvent){};
     virtual void ccTouchEnded(cocos2d::CCTouch * pTouch, cocos2d::CCEvent * pEvent);
+
+    void setMaxDuration(unsigned int maxDuration)
+    {
+        _maxDuration = maxDuration;
+    }
+
+    void setMinDistance(unsigned int minDistance)
+    {
+        _minDistance = minDistance;
+    }
+
 protected:
     CC_SYNTHESIZE(int, direction, Direction);
+    unsigned int _minDistance;
+    unsigned int _maxDuration;
 private:
     cocos2d::CCPoint initialPosition;
     struct cocos2d::cc_timeval startTime;
-    
+
     bool checkSwipeDirection(cocos2d::CCPoint p1, cocos2d::CCPoint p2, int & dir);
 };
 

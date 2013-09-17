@@ -28,46 +28,50 @@ USING_NS_CC;
 bool CCSwipeGestureRecognizer::init()
 {
     direction = 0;
+    _minDistance = kSwipeMinDistance;
+    _maxDuration = kSwipeMaxDuration;
+
     return true;
 }
 
 CCSwipeGestureRecognizer::~CCSwipeGestureRecognizer()
 {
-    
+
 }
 
 bool CCSwipeGestureRecognizer::checkSwipeDirection(CCPoint p1, CCPoint p2, int & dir)
 {
-    bool right = p2.x-p1.x>=kSwipeMinDistance;
-    bool left = p1.x-p2.x>=kSwipeMinDistance;
-    bool down = p1.y-p2.y>=kSwipeMinDistance;
-    bool up = p2.y-p1.y>=kSwipeMinDistance;
-    
-    if (right) {
+    bool right = p2.x-p1.x>=_minDistance;
+    bool left = p1.x-p2.x>=_minDistance;
+    bool down = p1.y-p2.y>=_minDistance;
+    bool up = p2.y-p1.y>=_minDistance;
+
+    CCLOG("CHECK SWIPE r %i l %i d %i u %i dire %i ", right, left, down, up, direction);
+    if (right && !down && !up) {
         if ((direction & kSwipeGestureRecognizerDirectionRight) == kSwipeGestureRecognizerDirectionRight) {
             dir = kSwipeGestureRecognizerDirectionRight;
             return true;
         }
     }
-    else if (left) {
+    else if (left  && !down && !up) {
         if ((direction & kSwipeGestureRecognizerDirectionLeft) == kSwipeGestureRecognizerDirectionLeft) {
             dir = kSwipeGestureRecognizerDirectionLeft;
             return true;
         }
     }
-    else if (up) {
+    else if (up  && !left && !right) {
         if ((direction & kSwipeGestureRecognizerDirectionUp) == kSwipeGestureRecognizerDirectionUp) {
             dir = kSwipeGestureRecognizerDirectionUp;
             return true;
         }
     }
-    else if (down) {
+    else if (down && !left && !right) {
         if ((direction & kSwipeGestureRecognizerDirectionDown) == kSwipeGestureRecognizerDirectionDown) {
             dir = kSwipeGestureRecognizerDirectionDown;
             return true;
         }
     }
-    
+
     return false;
 }
 
@@ -77,12 +81,12 @@ bool CCSwipeGestureRecognizer::ccTouchBegan(CCTouch * pTouch, CCEvent * pEvent)
         isRecognizing = false;
         return false;
     }
-    
+
     initialPosition = pTouch->getLocation();
     if (!isPositionBetweenBounds(initialPosition)) return false;
-    
+
     CCTime::gettimeofdayCocos2d(&startTime, NULL);
-    
+
     isRecognizing = true;
     return true;
 }
@@ -94,27 +98,27 @@ void CCSwipeGestureRecognizer::ccTouchEnded(CCTouch * pTouch, CCEvent * pEvent)
         isRecognizing = false;
         return;
     }
-    
+
     //distance between initial and final point of touch
     float distance = distanceBetweenPoints(initialPosition, finalPosition);
-    
+
     struct cc_timeval currentTime;
     CCTime::gettimeofdayCocos2d(&currentTime, NULL);
-    
+
     double duration = CCTime::timersubCocos2d(&startTime, &currentTime); //duration in milliseconds
-    
+
     //check that minimum distance has been reached
     //check that maximum duration hasn't been reached
     //check if the direction of the swipe is correct
     int dir = 0;
-    if (distance>=kSwipeMinDistance && duration<=kSwipeMaxDuration && checkSwipeDirection(initialPosition,finalPosition,dir)) {
+    if (distance>=_minDistance && duration<=_maxDuration && checkSwipeDirection(initialPosition,finalPosition,dir)) {
         CCSwipe * swipe = CCSwipe::create();
         swipe->direction = (CCSwipeGestureRecognizerDirection)dir;
         swipe->location = initialPosition;
-        
+
         gestureRecognized(swipe);
         if (cancelsTouchesInView) stopTouchesPropagation(createSetWithTouch(pTouch), pEvent); //cancel touch over other views
     }
-    
+
     isRecognizing = false;
 }
