@@ -39,14 +39,41 @@ CCSwipeGestureRecognizer::~CCSwipeGestureRecognizer()
 
 }
 
-bool CCSwipeGestureRecognizer::checkSwipeDirection(CCPoint p1, CCPoint p2, int & dir)
+bool CCSwipeGestureRecognizer::checkSwipeDirection(CCPoint p1, CCPoint p2, int & dir, int & dir_m)
 {
     bool right = p2.x-p1.x>=_minDistance;
     bool left = p1.x-p2.x>=_minDistance;
     bool down = p1.y-p2.y>=_minDistance;
     bool up = p2.y-p1.y>=_minDistance;
 
+    dir_m = 0;
+
+#if defined(COCOS2D_DEBUG)
     CCLOG("CHECK SWIPE r %i l %i d %i u %i dire %i ", right, left, down, up, direction);
+#endif
+
+    if (left && (direction & kSwipeGestureRecognizerDirectionLeft))
+        dir_m |= kSwipeGestureRecognizerDirectionLeft;
+    else if (right && (direction & kSwipeGestureRecognizerDirectionRight))
+        dir_m |= kSwipeGestureRecognizerDirectionRight;
+
+    if (down && (direction & kSwipeGestureRecognizerDirectionDown))
+        dir_m |= kSwipeGestureRecognizerDirectionDown;
+    else if (up && (direction & kSwipeGestureRecognizerDirectionUp))
+        dir_m |= kSwipeGestureRecognizerDirectionUp;
+
+#if defined(COCOS2D_DEBUG)
+    CCLOG("dir_m %i left %i right %i down %i up %i", dir_m, (dir_m & kSwipeGestureRecognizerDirectionLeft) == kSwipeGestureRecognizerDirectionLeft,
+          (dir_m & kSwipeGestureRecognizerDirectionRight) == kSwipeGestureRecognizerDirectionRight,
+          (dir_m & kSwipeGestureRecognizerDirectionDown) == kSwipeGestureRecognizerDirectionDown,
+          (dir_m & kSwipeGestureRecognizerDirectionUp) == kSwipeGestureRecognizerDirectionUp);
+#endif
+
+    if (dir_m != 0)
+        return true;
+
+    return false;
+
     if (right && !down && !up) {
         if ((direction & kSwipeGestureRecognizerDirectionRight) == kSwipeGestureRecognizerDirectionRight) {
             dir = kSwipeGestureRecognizerDirectionRight;
@@ -111,10 +138,13 @@ void CCSwipeGestureRecognizer::ccTouchEnded(CCTouch * pTouch, CCEvent * pEvent)
     //check that maximum duration hasn't been reached
     //check if the direction of the swipe is correct
     int dir = 0;
-    if (distance>=_minDistance && duration<=_maxDuration && checkSwipeDirection(initialPosition,finalPosition,dir)) {
+    int dir_m = 0;
+    if (distance>=_minDistance && duration<=_maxDuration && checkSwipeDirection(initialPosition,finalPosition,dir, dir_m)) {
         CCSwipe * swipe = CCSwipe::create();
         swipe->direction = (CCSwipeGestureRecognizerDirection)dir;
+        swipe->bit_directions = dir_m;
         swipe->location = initialPosition;
+        swipe->finalPosition = finalPosition;
 
         gestureRecognized(swipe);
         if (cancelsTouchesInView) stopTouchesPropagation(createSetWithTouch(pTouch), pEvent); //cancel touch over other views

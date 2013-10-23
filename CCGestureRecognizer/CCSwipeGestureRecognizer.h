@@ -42,7 +42,9 @@ public:
     bool init() {return true;}
     CREATE_FUNC(CCSwipe);
     CCSwipeGestureRecognizerDirection direction;
+    int bit_directions;
     cocos2d::CCPoint location;
+    cocos2d::CCPoint finalPosition;
 };
 
 class CCSwipeGestureRecognizer : public CCGestureRecognizer
@@ -74,7 +76,7 @@ private:
     cocos2d::CCPoint initialPosition;
     struct cocos2d::cc_timeval startTime;
 
-    bool checkSwipeDirection(cocos2d::CCPoint p1, cocos2d::CCPoint p2, int & dir);
+    bool checkSwipeDirection(cocos2d::CCPoint p1, cocos2d::CCPoint p2, int & dir, int & dir_m);
 };
 
 #endif
